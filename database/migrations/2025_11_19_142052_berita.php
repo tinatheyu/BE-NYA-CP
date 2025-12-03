@@ -26,7 +26,6 @@ return new class extends Migration
             $table->string('media');
             $table->integer('status')->default(0);
             $table->timestamps();   
-            $table->date('publish_date');
         });
     }
 

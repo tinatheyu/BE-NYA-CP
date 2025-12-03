@@ -13,8 +13,8 @@ return new class extends Migration
             $table->bigIncrements('id');               
             $table->string('nama', 255);              
             $table->text('pesan');   
-            $table->decimal('rating', 2, 1)->nullable();
- 
+            $table->interger('rating');
+            $table->timestamps();
         });
     }
 
