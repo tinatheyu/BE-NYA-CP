@@ -38,13 +38,22 @@ class GaleriController extends Controller
             'tanggal' => 'nullable|date', 
         ]);
 
-        $path = $request->file('media')->store('galeri', 's3');
-        $baseUrl = config('filesystems.disks.s3.url');
-    $url = 'https://' . env('AWS_BUCKET') . '.s3.' . env('AWS_DEFAULT_REGION') . '.amazonaws.com/' . $path;
+        if ($request->hasFile('media')) {
+
+            $folder = 'galeri/' . date('Y') . '/' . date('m') . '/' . date('d');
+            $path = $request->file('media')->store($folder, 'public');
+            $validated['media'] = asset('storage/' . $path);
+    
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'File media wajib dikirim'
+            ], 400);
+        }
         $galeri = galeri::create([
             'judul' => $request['judul'],
             'deskripsi' => $request['deskripsi'],
-            'media' => $url,
+            'media' => $path,
             'tipe_media' => $request['tipe_media'],
             'tanggal' => $request['tanggal'] ?? now(), 
         ]);
@@ -70,18 +79,23 @@ class GaleriController extends Controller
             'tanggal' => 'nullable|date', 
         ]);
 
-        if ($request->hasFile('media') && $request->file('media')->isValid()) {
+        if ($request->hasFile('media')) {
+
             if ($galeri->media) {
-                $oldPath = str_replace(env('AWS_URL') . '/', '', $berita->media);
-                Storage::disk('s3')->delete($oldPath);
+                $oldPath = str_replace('/storage/', '', $galeri->media);
+                Storage::disk('public')->delete($oldPath);
             }
     
-            $path = $request->file('media')->store('galeri', 's3');
-            $baseUrl = rtrim(env('AWS_URL'), '/');
-            $validated['media'] = $baseUrl . '/' . ltrim($path, '/');
+            $folder = 'galeri/' . date('Y') . '/' . date('m') . '/' . date('d');
+            $path = $request->file('media')->store($folder, 'public');
+    
+            $validated['media'] = url('storage/' . $path);
+    
+    
         } else {
             $validated['media'] = $galeri->media;
         }
+    
 
         $galeri->update($validated);
 
@@ -96,6 +110,10 @@ class GaleriController extends Controller
         $galeri = galeri::find($id);
         if (!$galeri) {
             return response()->json(['message' => 'Galeri not found'], 404);
+        }
+        if ($galeri->media) {
+            $oldPath = str_replace(url('storage') . '/', '', $galeri->media);
+            Storage::disk('public')->delete($oldPath);
         }
         $galeri->delete();
 

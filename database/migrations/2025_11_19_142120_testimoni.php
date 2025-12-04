@@ -13,7 +13,7 @@ return new class extends Migration
             $table->bigIncrements('id');               
             $table->string('nama', 255);              
             $table->text('pesan');   
-            $table->interger('rating');
+            $table->integer('rating');
             $table->timestamps();
         });
     }

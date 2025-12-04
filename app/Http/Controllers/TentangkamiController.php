@@ -68,7 +68,6 @@ class TentangkamiController extends Controller
         if (!$data) {
             return response()->json(['status' => false, 'message' => 'Data tidak ditemukan'], 404);
         }
-
         $data->delete();
 
         return response()->json(['status' => true, 'message' => 'Data berhasil dihapus']);

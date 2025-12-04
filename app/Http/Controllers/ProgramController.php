@@ -49,8 +49,17 @@ class ProgramController extends Controller
         $validatedData = $validator->validated();
 
         if ($request->hasFile('media')) {
-            $path = $request->file('media')->store('program', 's3');
-            $validatedData['media'] = Storage::disk('s3')->url($path);
+
+            $folder = 'program/' . date('Y') . '/' . date('m') . '/' . date('d');
+            $path = $request->file('media')->store($folder, 'public');
+            $validated['media'] = asset('storage/' . $path);
+           
+    
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'File media wajib dikirim'
+            ], 400);
         }
 
         $data = program::create($validatedData);
@@ -58,7 +67,8 @@ class ProgramController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Data berhasil ditambahkan',
-            'data' => $data
+            'data' => $data,
+            'media' => $path
         ], 201);
     }
 
@@ -84,15 +94,20 @@ class ProgramController extends Controller
 
         $validatedData = $validator->validated();
 
-        if ($request->hasFile('media') && $request->file('media')->isValid()) {
+        if ($request->hasFile('media')) {
 
             if ($data->media) {
-                $oldPath = str_replace(Storage::disk('s3')->url(''), '', $data->media);
-                Storage::disk('s3')->delete($oldPath);
+                $oldPath = str_replace('/storage/', '', $data->media);
+                Storage::disk('public')->delete($oldPath);
             }
-
-            $path = $request->file('media')->store('program', 's3');
-            $validatedData['media'] = Storage::disk('s3')->url($path);
+    
+            $folder = 'program/' . date('Y') . '/' . date('m') . '/' . date('d');
+            $path = $request->file('media')->store($folder, 'public');
+    
+            $validated['media'] = url('storage/' . $path);
+    
+        } else {
+            $validated['media'] = $data->media;
         }
 
         $data->update($validatedData);
@@ -113,8 +128,8 @@ class ProgramController extends Controller
         }
 
         if ($data->media) {
-            $oldPath = str_replace(Storage::disk('s3')->url(''), '', $data->media);
-            Storage::disk('s3')->delete($oldPath);
+            $oldPath = str_replace(url('storage') . '/', '', $data->media);
+            Storage::disk('public')->delete($oldPath);
         }
 
         $data->delete();

@@ -10,6 +10,7 @@ use App\Http\Controllers\TentangkamiController;
 use App\Http\Controllers\AuthController;
 
 
+
             Route::apiResource('berita', App\Http\Controllers\BeritaController::class);
             Route::apiResource('testimoni', App\Http\Controllers\TestimoniController::class);
             Route::apiResource('galeri', App\Http\Controllers\GaleriController::class);

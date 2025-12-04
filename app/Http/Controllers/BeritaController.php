@@ -12,7 +12,7 @@ class BeritaController extends Controller
     public function index(Request $request)
     {
         $status = $request->query('status');
-        $sort   = $request->query('sort', 'desc'); 
+        $sort   = $request->query('sort', 'desc');
 
         if (!in_array($sort, ['asc', 'desc'])) {
             $sort = 'desc';
@@ -27,6 +27,11 @@ class BeritaController extends Controller
         $query->orderBy('publish_date', $sort);
 
         $berita = $query->get();
+
+        $berita->map(function ($item) {
+            $item->media_url = $item->media ? url('storage/' . $item->media) : null;
+            return $item;
+        });
 
         return response()->json([
             'success' => true,
@@ -48,6 +53,8 @@ class BeritaController extends Controller
                 'message' => 'Berita tidak ditemukan'
             ], 404);
         }
+
+        $berita->media_url = $berita->media ? url('storage/' . $berita->media) : null;
 
         return response()->json([
             'success' => true,
@@ -74,30 +81,16 @@ class BeritaController extends Controller
             $slug .= '-' . ($count + 1);
         }
 
-        if ($request->hasFile('media')) {
+        $folder = 'berita/' . date('Y') . '/' . date('m') . '/' . date('d');
+        $path = $request->file('media')->store($folder, 'public');
 
-            $folder = 'berita/' . date('Y') . '/' . date('m') . '/' . date('d');
-            $path = $request->file('media')->store($folder, 's3');
-        
-            Storage::disk('s3')->setVisibility($path, 'public');
-        
-            $validated['media'] = Storage::disk('s3')->url($path);
-            $validated['publish_date'] = now();
-            
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'File media wajib dikirim'
-            ], 400);
-        }
-        
-        if ($request->publish_date) {
-            $validated['publish_date'] = $request->publish_date;
-        }
-
+        $validated['media'] = $path;
         $validated['slug'] = $slug;
+        $validated['publish_date'] = $request->publish_date ?? now();
 
         $berita = berita::create($validated);
+
+        $berita->media_url = url('storage/' . $berita->media);
 
         return response()->json([
             'success' => true,
@@ -130,7 +123,6 @@ class BeritaController extends Controller
         if ($request->judul !== $berita->judul) {
             $slug = Str::slug($request->judul, '-');
             $count = berita::where('slug', 'LIKE', "{$slug}%")->count();
-
             if ($count > 0) {
                 $slug .= '-' . ($count + 1);
             }
@@ -139,22 +131,16 @@ class BeritaController extends Controller
             $validated['slug'] = $berita->slug;
         }
 
-        if ($request->hasFile('media') && $request->file('media')->isValid()) {
-
+        if ($request->hasFile('media')) {
             if ($berita->media) {
-                $oldPath = str_replace(env('AWS_URL') . '/', '', $berita->media);
-                Storage::disk('s3')->delete($oldPath);
+                Storage::disk('public')->delete($berita->media);
             }
 
             $folder = 'berita/' . date('Y') . '/' . date('m') . '/' . date('d');
-            $path = $request->file('media')->store($folder, 's3');
+            $path = $request->file('media')->store($folder, 'public');
 
-            $baseUrl = rtrim(env('AWS_URL'), '/');
-            $validated['media'] = $baseUrl . '/' . ltrim($path, '/');
-
+            $validated['media'] = $path;
             $validated['publish_date'] = now();
-        } else {
-            $validated['media'] = $berita->media;
         }
 
         if ($request->publish_date) {
@@ -162,6 +148,8 @@ class BeritaController extends Controller
         }
 
         $berita->update($validated);
+
+        $berita->media_url = url('storage/' . $berita->media);
 
         return response()->json([
             'success' => true,
@@ -182,8 +170,7 @@ class BeritaController extends Controller
         }
 
         if ($berita->media) {
-            $oldPath = str_replace(env('AWS_URL') . '/', '', $berita->media);
-            Storage::disk('s3')->delete($oldPath);
+            Storage::disk('public')->delete($berita->media);
         }
 
         $berita->delete();
@@ -197,6 +184,7 @@ class BeritaController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $berita = berita::find($id);
+
         if (!$berita) {
             return response()->json([
                 'success' => false,
