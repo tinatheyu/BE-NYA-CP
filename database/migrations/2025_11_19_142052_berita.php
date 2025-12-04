@@ -25,6 +25,7 @@ return new class extends Migration
             ])->default('Berita Umum');
             $table->string('media');
             $table->integer('status')->default(0);
+            $table->date('publish_date');
             $table->timestamps();   
         });
     }
