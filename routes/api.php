@@ -10,13 +10,12 @@ use App\Http\Controllers\TentangkamiController;
 use App\Http\Controllers\AuthController;
 
 
+Route::apiResource('berita', BeritaController::class);
+Route::apiResource('testimoni', TestimoniController::class);
+Route::apiResource('galeri', GaleriController::class);
+Route::apiResource('tentang-kami', TentangkamiController::class);
+Route::apiResource('program', ProgramController::class);
+Route::patch('berita/{id}/status', [BeritaController::class, 'updateStatus']);
 
-            Route::apiResource('berita', App\Http\Controllers\BeritaController::class);
-            Route::apiResource('testimoni', App\Http\Controllers\TestimoniController::class);
-            Route::apiResource('galeri', App\Http\Controllers\GaleriController::class);
-            Route::apiResource('tentang-kami', App\Http\Controllers\TentangkamiController::class);
-            Route::apiResource('program', App\Http\Controllers\ProgramController::class);
-            Route::patch('berita/{id}/status', [App\Http\Controllers\BeritaController::class, 'updateStatus']);
-            Route::get('/sso/callback', [AuthController::class, 'callback']);
-
-
+Route::get('/sso/callback', [AuthController::class, 'callback']);
+Route::post('/logout', [AuthController::class, 'logout']);
