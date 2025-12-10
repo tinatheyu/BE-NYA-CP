@@ -8,11 +8,17 @@ use Illuminate\Support\Facades\Validator;
 class TestimoniController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $testimoni = testimoni::orderBy('created_at', 'desc')->get();
+        
+        $sort = $request->query('sort', 'desc');
+        if (!in_array($sort, ['asc', 'desc'])) {
+            $sort = 'desc';
+        }
 
+        $testimoni = testimoni::orderBy('created_at', 'desc')->get();
         $total = $testimoni->count();
+        $total_active = testimoni::where('status_active', 1)->count();
         if ($total === 0) {
             return response()->json([
                 'status' => true,
@@ -43,6 +49,7 @@ class TestimoniController extends Controller
             'data' => [
                 'testimoni'         => $testimoni,
                 'total_testimoni'   => $total,
+                'total_active'      => $total_active,
                 'five_star'         => $percent($count5),
                 'four_star'         => $percent($count4),
                 'three_star'        => $percent($count3),
@@ -75,7 +82,8 @@ class TestimoniController extends Controller
         $validated = $request->validate([
             'nama'      => 'required|string|max:255',
             'pesan' => 'required|string',
-            'rating'    => 'nullable|numeric|min:1|max:5'
+            'rating'    => 'nullable|numeric|min:1|max:5',
+            'status_active' =>'required|integer|in:0,1'
         ]);
         
         $data = testimoni::create($validated);

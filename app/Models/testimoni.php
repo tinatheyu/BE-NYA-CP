@@ -13,6 +13,7 @@ class testimoni extends Model
     protected $fillable = [
         'nama',
         'pesan',
-        'rating'
+        'rating',
+        'status_active'
     ];
 }

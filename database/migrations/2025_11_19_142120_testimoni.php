@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('nama', 255);              
             $table->text('pesan');   
             $table->integer('rating');
+            $table->integer('status_active')->default(0);
             $table->timestamps();
         });
     }
