@@ -65,16 +65,25 @@ class BeritaController extends Controller
 
     public function store(Request $request)
     {
+        if (empty($validated)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Form data kosong'
+            ], 422);
+        }
+        
         $validated = $request->validate([
             'judul'        => 'required|string',
             'isi'          => 'required|string',
-            'deskripsi'    => 'nullable|string',
+            'deskripsi'    => 'required|string',
             'media'        => 'required|file|mimes:jpg,jpeg,png,mp4,mov,avi|max:102400',
-            'status'       => 'required|integer',
+            'status'       => 'required|in:0,1',
             'kategori'     => 'required|string',
             'publish_date' => 'nullable|date'
         ]);
 
+        
+        
         $slug = Str::slug($validated['judul'], '-');
         $count = berita::where('slug', 'LIKE', "{$slug}%")->count();
         if ($count > 0) {
@@ -88,10 +97,13 @@ class BeritaController extends Controller
         $validated['slug'] = $slug;
         $validated['publish_date'] = $request->publish_date ?? now();
 
+        
+
         $berita = berita::create($validated);
 
         $berita->media_url = url('storage/' . $berita->media);
 
+        
         return response()->json([
             'success' => true,
             'message' => 'Berita berhasil ditambahkan',
@@ -101,6 +113,8 @@ class BeritaController extends Controller
 
     public function update(Request $request, $id)
     {
+
+        
         $berita = berita::find($id);
 
         if (!$berita) {
@@ -109,6 +123,7 @@ class BeritaController extends Controller
                 'message' => 'Berita tidak ditemukan'
             ], 404);
         }
+
 
         $validated = $request->validate([
             'judul'     => 'required|string|max:255',
@@ -151,6 +166,14 @@ class BeritaController extends Controller
 
         $berita->media_url = url('storage/' . $berita->media);
 
+        if ($request->all() === [] && !$request->hasFile('media')) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Form data kosong'
+            ], 422);
+        }
+        
+
         return response()->json([
             'success' => true,
             'message' => 'Berita berhasil diperbarui',
@@ -182,28 +205,38 @@ class BeritaController extends Controller
     }
 
     public function updateStatus(Request $request, $id)
-    {
-        $berita = berita::find($id);
+{
+    $berita = berita::find($id);
 
-        if (!$berita) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Berita tidak ditemukan'
-            ], 404);
-        }
-
-        $validated = $request->validate([
-            'status' => 'required|integer'
-        ]);
-
-        $berita->update([
-            'status' => $validated['status']
-        ]);
-
+    if (!$berita) {
         return response()->json([
-            'success' => true,
-            'message' => 'Status berita berhasil diperbarui',
-            'data' => $berita
-        ], 200);
+            'success' => false,
+            'message' => 'Berita tidak ditemukan'
+        ], 404);
     }
+
+    $validated = $request->validate([
+        'status' => 'required|in:0,1'
+    ]);
+
+    $data = [
+        'status' => $validated['status']
+    ];
+
+    if ((int) $validated['status'] === 1) {
+        $data['publish_date'] = now();
+    } else {
+        $data['publish_date'] = null;
+    }
+
+
+
+    $berita->update($data);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Status berita berhasil diperbarui',
+        'data' => $berita->fresh()
+    ], 200);
+}
 }
