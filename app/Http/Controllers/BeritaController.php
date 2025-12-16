@@ -207,7 +207,7 @@ class BeritaController extends Controller
 
     public function updateStatus(Request $request, $id)
 {
-    $berita = berita::find($id);
+    $berita = Berita::find($id);
 
     if (!$berita) {
         return response()->json([
@@ -217,20 +217,20 @@ class BeritaController extends Controller
     }
 
     $validated = $request->validate([
-        'status' => 'required|in:0,1'
+        'status' => 'required|integer|in:0,1'
     ]);
 
-    $data = [
-        'status' => $validated['status']
-    ];
+    $berita->status = $validated['status'];
 
-    if ((int) $validated['status'] === 1) {
-        $data['publish_date'] = now();
-    } else {
-        $data['publish_date'] = null;
+    if ($validated['status'] === 1) {
+        $berita->publish_date = now();
     }
 
-    $berita->update($data);
+    if ($validated['status'] === 0) {
+        $berita->publish_date = null;
+    }
+
+    $berita->save();
 
     return response()->json([
         'success' => true,
@@ -238,4 +238,5 @@ class BeritaController extends Controller
         'data' => $berita->fresh()
     ], 200);
 }
+
 }
