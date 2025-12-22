@@ -20,6 +20,7 @@ Route::middleware(['sso:1'])->group(function () {
     Route::apiResource('program', ProgramController::class);
     Route::post('/program/{id}/update', [ProgramController::class, 'update']);
     Route::get('/dashboard/count', [DashboardController::class, 'count']);
+    Route::get('/test-service', [AuthController::class, 'testService']);
 });
 
 Route::prefix('sso')->group(function () {

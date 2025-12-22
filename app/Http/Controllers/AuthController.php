@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\SsoToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Firebase\JWT\JWT;
 use Carbon\Carbon;
+use App\Services\SsoService;
 use App\Http\Requests\Auth\LoginRules;
 use Exception;
 
 class AuthController extends Controller
 {
+    protected $ssoService;
+    public function __construct(SsoService $ssoService)
+    {
+        $this->ssoService = $ssoService;
+    }
     public function callback(Request $r)
     {
         try {
@@ -190,6 +195,23 @@ class AuthController extends Controller
             'status' => true,
             'message' => 'Logout successful',
             'redirect' => env('SSO_PORTAL_BASE_URL') . '/'
+        ]);
+    }
+
+    public function testService(Request $request)
+    {
+        $userId = $request->sso_user_id;
+        $roleId = $request->sso_role_id;
+        $tahunAjaran = $request->sso_tahun_ajaran;
+        $semester = $request->sso_semester;
+
+        $dataClassroom = $this->ssoService->getDataClassRoom($userId);
+        $dataUser = $this->ssoService->getDataUserById($userId);
+
+        return response()->json([
+            "status" => true,
+            "message" => "Success",
+            "data" => $dataUser
         ]);
     }
 }
