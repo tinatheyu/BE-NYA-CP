@@ -17,7 +17,7 @@ class CheckSsoToken
     public function handle(Request $request, Closure $next): Response
     {
         // Jika middleware dimatikan melalui ENV → bypass
-        if (!env('MIDDLEWARE_CHECK_ENABLED', true)) {
+        if (!env('SSO_MIDDLEWARE_CHECK_ENABLED', true)) {
             return $next($request);
         }
         // 1. Ambil token dari header Authorization
