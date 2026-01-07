@@ -10,14 +10,5 @@ class Tentangkami extends Model
 
     protected $table = 'tentang_kamis';
 
-    protected $fillable = [
-        'nama',
-        'deskripsi',
-        'visi',
-        'misi',
-        'alamat',
-        'telepon',
-        'instagram',
-        'email',
-    ];
+    protected $fillable = ['nama', 'email', 'telepon', 'instagram', 'alamat', 'sejarah', 'visi', 'misi', 'program', 'gambar', 'judul', 'deskripsi'];
 }
