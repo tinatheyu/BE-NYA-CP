@@ -111,7 +111,7 @@ class TestimoniController extends Controller
             'data' => [
                 'testimoni' => $testimoni,
                 'total' => $testimoni->count(),
-                'total_active' => $testimoni->where('status_active', 1)->count(),
+                'total_active' => $testimoni->where('status_active', 0)->count(),
             ],
         ]);
     }
@@ -160,7 +160,7 @@ class TestimoniController extends Controller
 
         return response()->json(['status' => true, 'message' => 'Data berhasil diperbarui', 'data' => $data]);
     }
-    
+
     public function updateStatus(Request $request, $id)
     {
         $data = Testimoni::find($id);

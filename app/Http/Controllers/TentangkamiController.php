@@ -7,14 +7,24 @@ use Illuminate\Support\Facades\Validator;
 
 class TentangkamiController extends Controller
 {
+    // ini array
+    // public function index()
+    // {
+    //     $data = Tentangkami::all();
+    //     return response()->json([
+    //         'status' => true,
+    //         'message' => 'Data Tentang Kami berhasil diambil',
+    //         'data' => $data,
+    //     ]);
+    // }
 
     public function index()
     {
-        $data = Tentangkami::all();
+        $data = Tentangkami::first(); // hanya 1 data
+
         return response()->json([
             'status' => true,
-            'message' => 'Data Tentang Kami berhasil diambil',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -31,10 +41,10 @@ class TentangkamiController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nama'=>'required',
-            'telepon'=>'required',
-            'instagram'=>'required',
-            'alamat'=>'required',
+            'nama' => 'required',
+            'telepon' => 'required',
+            'instagram' => 'required',
+            'alamat' => 'required',
             'deskripsi' => 'required',
             'visi' => 'nullable|string',
             'misi' => 'nullable|string',
@@ -60,7 +70,6 @@ class TentangkamiController extends Controller
 
         return response()->json(['status' => true, 'message' => 'Data berhasil diperbarui', 'data' => $data]);
     }
-
 
     public function destroy($id)
     {

@@ -9,20 +9,24 @@ use App\Http\Controllers\TentangkamiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 
-Route::middleware(['sso:1'])->group(function () {
-    Route::apiResource('berita', BeritaController::class);
-    Route::post('/berita/{id}/update', [BeritaController::class, 'update']);
-    Route::patch('berita/{id}/status', [BeritaController::class, 'updateStatus']);
-    Route::apiResource('testimoni', TestimoniController::class);
-    Route::apiResource('galeri', GaleriController::class);
-    Route::apiResource('testimoni', TestimoniController::class);
-    Route::post('/galeri/{id}/update', [GaleriController::class, 'update']);
-    Route::apiResource('tentang-kami', TentangkamiController::class);
-    Route::apiResource('program', ProgramController::class);
-    Route::post('/program/{id}/update', [ProgramController::class, 'update']);
-    Route::get('/dashboard/count', [DashboardController::class, 'count']);
-    Route::get('/test-service', [AuthController::class, 'testService']);
-});
+// Route::middleware(['sso:1'])->group(function () {
+Route::apiResource('berita', BeritaController::class);
+Route::post('/berita/{id}/update', [BeritaController::class, 'update']);
+Route::patch('berita/{id}/status', [BeritaController::class, 'updateStatus']);
+Route::apiResource('testimoni', TestimoniController::class);
+Route::apiResource('galeri', GaleriController::class);
+Route::post('/galeri/{id}/update', [GaleriController::class, 'update']);
+Route::apiResource('tentang-kami', TentangkamiController::class);
+
+Route::get('/tentang-kami', [TentangkamiController::class, 'index']);
+Route::post('/tentang-kami', [TentangkamiController::class, 'store']);
+Route::put('/tentang-kami/{id}', [TentangkamiController::class, 'update']);
+
+Route::apiResource('program', ProgramController::class);
+Route::post('/program/{id}/update', [ProgramController::class, 'update']);
+Route::get('/dashboard/count', [DashboardController::class, 'count']);
+Route::get('/test-service', [AuthController::class, 'testService']);
+// });
 
 Route::prefix('sso')->group(function () {
     Route::get('/callback', [AuthController::class, 'callback']);
